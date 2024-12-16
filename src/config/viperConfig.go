@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var logger = middlerware.Log();
+var logger = middlerware.Log()
 
 // LoadEnv loads the environment variables from the .env file
 func LoadEnv() {
