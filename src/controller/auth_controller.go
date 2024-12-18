@@ -7,12 +7,14 @@ import (
 	"github.com/go-playground/validator/v10"
 
 	"register/src/constants"
+	"register/src/models/schemas"
+	"register/src/services"
 )
 
 var validate = validator.New(validator.WithRequiredStructEnabled())
 
 func RegisterHandler(c *gin.Context) {
-	var req RegisterSchema
+	var req schemas.RegisterSchema
 	// Bind JSON input
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(constants.BAD_REQUEST, gin.H{"error": err.Error()})
@@ -30,10 +32,7 @@ func RegisterHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(constants.OK, gin.H{
-		"message": "Registration successful",
-		"user":    req.Username,
-	})
+	services.Register(c, req)
 }
 
 // LogoutHandler handles user logout
