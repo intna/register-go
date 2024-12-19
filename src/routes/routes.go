@@ -4,12 +4,13 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"register/src/controller"
+	"register/src/middleware"
 )
 
 func RegisterRoutes(r *gin.Engine) {
 	api := r.Group("/")
 	{
-		api.POST("/register", controller.RegisterHandler)
-		api.POST("/logout", controller.LogoutHandler)
+		api.POST("/register", middleware.CatchErrors(controller.RegisterHandler))
+		api.POST("/logout", middleware.CatchErrors(controller.LogoutHandler))
 	}
 }

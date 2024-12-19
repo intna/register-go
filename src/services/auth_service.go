@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"register/src/config"
@@ -9,7 +10,6 @@ import (
 	"register/src/models"
 	"register/src/models/schemas"
 
-	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -18,8 +18,7 @@ import (
 
 var client *mongo.Client
 
-func Register(c *gin.Context, req schemas.RegisterSchema) {
-
+func Register(req schemas.RegisterSchema) error {
 	client = config.MongoClient
 	collection := client.Database(constants.DBNAME).Collection(constants.USER)
 
@@ -27,18 +26,16 @@ func Register(c *gin.Context, req schemas.RegisterSchema) {
 	var existingUser models.User
 	err := collection.FindOne(context.Background(), filter).Decode(&existingUser)
 	if err == nil {
-		c.JSON(constants.INTERNAL_SERVER_ERROR, gin.H{"error": "User already registered"})
-		return
+		return errors.New("user already registered")
 	} else if err != mongo.ErrNoDocuments {
-		c.JSON(constants.INTERNAL_SERVER_ERROR, gin.H{"error": "Database error"})
-		return
+		return errors.New("database error")
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(constants.INTERNAL_SERVER_ERROR, gin.H{"error": "Failed to hash password"})
-		return
+		return errors.New("failed to hash password")
 	}
+
 	newUser := models.User{
 		Email:     req.Email,
 		Password:  string(hashedPassword),
@@ -50,12 +47,8 @@ func Register(c *gin.Context, req schemas.RegisterSchema) {
 
 	_, err = collection.InsertOne(ctx, newUser)
 	if err != nil {
-		c.JSON(constants.INTERNAL_SERVER_ERROR, gin.H{"error": "Failed to register user"})
-		return
+		return errors.New("failed to register user")
 	}
 
-	c.JSON(constants.OK, gin.H{
-		"message":       "Registration successful",
-		constants.Email: req.Email,
-	})
+	return nil
 }

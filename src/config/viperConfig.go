@@ -2,28 +2,24 @@ package config
 
 import (
 	"log"
-	"register/src/middlerware"
-	"strconv"
+	"register/src/middleware"
+	"strconv" //data type conv
 
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
 
-var logger = middlerware.Log()
+var logger = middleware.Log()
 
-// LoadEnv loads the environment variables from the .env file
 func LoadEnv() {
-	// Load .env file (optional, but ensures backward compatibility)
 	if err := godotenv.Load(); err != nil {
 		logger.Printf("No .env file found: %v", err)
 	}
 
-	// Configure Viper to read from environment variables
 	viper.AutomaticEnv()
-	viper.SetConfigFile(".env") // Specify the .env file
-	viper.SetConfigType("env")  // Specify the file type as "env"
+	viper.SetConfigFile(".env")
+	viper.SetConfigType("env")
 
-	// Read the .env file
 	if err := viper.ReadInConfig(); err != nil {
 		logger.Printf("Error reading .env file: %v", err)
 	} else {
@@ -39,7 +35,6 @@ func GetValue[T any](key string, defaultValue T) T {
 
 	value := viper.GetString(key)
 
-	// Convert the string value to the desired type
 	var result T
 	switch any(result).(type) {
 	case int:
